@@ -94,32 +94,31 @@ const questions = [
   },
 ];
 
-// Dichiarare le variabili come gli elementi che mi servono
+// VARIABILI
 let button = document.getElementsByTagName("button");
 let variableQuestion = document.getElementById("quiz-question");
 let questBtn = document.querySelectorAll(".selectBtn");
 
-let indexVerifica = 0
+let indexVerifica = 0;
 let indexQuestion = 0;
 let indexAnswer = 0;
 let indexCounter = 1;
 let punteggio = 0;
 let timer = 0;
 let intervalId;
-let elencoRisposte = []
+let elencoRisposte = [];
 
-
+// GENERAZIONE DOMANDE
 function question(index) {
-  // FUNZIONE per la generazione della domanda secondo l'indice domande
-  if(variableQuestion !== null){
-  variableQuestion.innerHTML = `${questions[index].question}`;
-  }else{
-    console.log("no element in the page")
+  if (variableQuestion !== null) {
+    variableQuestion.innerHTML = `${questions[index].question}`;
+  } else {
+    console.log("no element in the page");
   }
 }
 
+// RANDOMIZZAZIONE POSIZIONE RISPOSTE
 function answer(index) {
-  //FUNZIONE per la generazione delle risposte randomizzando la prima di posizione e piazzando le rimanenti sui i blocchi liberi
   let randomCorrect = randomAnswer();
 
   //GENERO UN NUMERO CAUSALE PER POSIZIONARE LA RISPOSTA ESATTA (AD OGNI REFRESH AVRA' POSIZIONE DIVERSA)
@@ -127,37 +126,34 @@ function answer(index) {
     button[randomCorrect].innerHTML = questions[index].correct_answer;
   }
 
-  let remainingButtons = [0, 1, 2, 3].filter(i => i !== randomCorrect);
+  let remainingButtons = [0, 1, 2, 3].filter((i) => i !== randomCorrect);
 
   for (let i = 0; i < remainingButtons.length; i++) {
     if (button[remainingButtons[i]]) {
-      button[remainingButtons[i]].innerHTML = questions[index].incorrect_answers[i];
+      button[remainingButtons[i]].innerHTML =
+        questions[index].incorrect_answers[i];
     }
   }
 }
 
-
 question(0);
 answer(0);
 
-// function invioRisposta(risposta) {
-//   let check = risposta;
-//   let corretto;
-//   if (check == button[0].value) {
-//     corretto = button[0].value;
-//   }
-// }
-
+// GENERA NUMERO CASUALE
 function randomAnswer() {
-  // FUNZIONE GENERA NUMERO CASUALE
   let num = Math.round(Math.random() * 3);
   return num;
 }
 
+// INCREMENTI
 for (let i = 0; i < questBtn.length; i++) {
   questBtn[i].addEventListener("click", function () {
     event.preventDefault();
     timerSeconds();
+
+    // Salva la risposta selezionata
+    let rispostaSelezionata = this.innerHTML;
+    elencoRisposte[indexQuestion] = rispostaSelezionata;
 
     // Incrementa le domande
     indexQuestion++;
@@ -171,69 +167,60 @@ for (let i = 0; i < questBtn.length; i++) {
     indexCounter++;
     document.querySelector(".questionNumber").innerHTML = indexCounter;
     console.log(timerSeconds());
-
-    // 
   });
 }
 
-// Timer function
+// TIMER
 
 function timerSeconds() {
   let set = 30;
   const seconds = document.querySelector("#circle");
 
   if (intervalId) {
-    clearInterval(intervalId); // Ferma il timer precedente
+    clearInterval(intervalId);
   }
 
-  // Funzione per aggiornare il display e lo strokeDashoffset
   const updateDisplay = () => {
-    // Aggiorna lo strokeDashoffset basato sui secondi rimanenti
     const offset = 450 - (set / 30) * 450;
-    var seconds = document.querySelector('#seconds');
+    if (seconds) {
+      seconds.style.strokeDashoffset = offset;
+      seconds.style.transition = "stroke-dashoffset 0.9s linear";
+    }
 
-// Verifica se l'elemento esiste
-if (seconds) {
-    // Se l'elemento esiste, esegui il codice
-    seconds.style.strokeDashoffset = offset;
-} else {
-    // L'elemento non esiste, puoi gestire la situazione qui se necessario
-    console.log("L'elemento non esiste nella pagina");
-}
-
-
-    // Aggiorna il resto dei secondi, mantenendo il formato "00"
     let lastSec = set < 10 ? "0" + set : set;
     const secondsElement = document.querySelector(".seconds");
-if (secondsElement) {
-    secondsElement.innerHTML = lastSec;
+    if (secondsElement) {
+      secondsElement.innerHTML = lastSec;
+    }
   };
 
   updateDisplay();
 
-  // Imposta la transizione per lo strokeDashoffset
-  seconds.style.transition = "stroke-dashoffset 0.9s linear";
-
   intervalId = setInterval(() => {
     set--;
-
     if (set < 0) {
-      clearInterval(intervalId); // Ferma il timer quando raggiunge 0
+      clearInterval(intervalId);
       return;
     }
-
-    updateDisplay(); // Aggiorna il display e lo strokeDashoffset
-  }, 1000); // Imposta l'intervallo a 1 secondo
+    updateDisplay();
+  }, 1000);
 }
 
-//timerSeconds();
+timerSeconds();
 
-// Reindirizza a pagina risultati
+// STORE PUNTEGGIO E LINK A PAGINA RISULTATI
 
-function resultPage(){
-  if(indexQuestion >= questions.length)
+function resultPage() {
+  if (indexQuestion >= questions.length) {
+    let punteggio = verifica();
+    console.log("Punteggio calcolato:", punteggio);
+    localStorage.setItem("punteggio", punteggio);
+    console.log(
+      "Punteggio salvato nel localStorage:",
+      localStorage.getItem("punteggio")
+    ); 
     window.location.href = "index-results.html";
-  pushNumber()
+  }
 }
 
 document.getElementById("answerOne").addEventListener("click", resultPage);
@@ -241,32 +228,18 @@ document.getElementById("answerTwo").addEventListener("click", resultPage);
 document.getElementById("answerThree").addEventListener("click", resultPage);
 document.getElementById("answerFour").addEventListener("click", resultPage);
 
-//Calcola risultato
-let punteggioFinale = 0
+// CALCOLO RISULTATO
+let punteggioFinale = 0;
 
-function verifica (indexVerifica) {
-  console.log (elencoRisposte[indexVerifica])
-  console.log (questions[indexVerifica].correct_answer)
-  if (elencoRisposte[indexVerifica] === questions[indexVerifica].correct_answer) {
-    punteggioFinale++ 
-  } else {
-    punteggioFinale
-  }
-  return punteggioFinale
-}
-
-let answerResult = verifica(0)
-console.log(answerResult)
-//Risultato a schermo
-
-let finalResult = document.getElementById("finalResult");
-let result = answerResult
-
-function pushNumber(){
-  if (finalResult) {
-    finalResult.innerHTML = result;
-    }else{
-    console.log("elemento non esiste")
+function verifica() {
+  punteggioFinale = 0;
+  for (let i = 0; i < questions.length; i++) {
+    if (elencoRisposte[i] === questions[i].correct_answer) {
+      punteggioFinale++;
     }
+  }
+  return punteggioFinale;
 }
-}
+
+let answerResult = verifica(0);
+console.log(answerResult);
